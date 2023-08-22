@@ -11,60 +11,68 @@
     <Window.DataContext>
         <viewModel:MainViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+    </Window.Resources>
 
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="60"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="60"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="{Binding CurrentDirectory}" VerticalAlignment="Center" Padding="5"/>
-            <Button Grid.Row="0" 
-                    Grid.Column="1"
-                    TextElement.Foreground="Black"
-                    Background="#787373f6"
-                    BorderBrush="Transparent"                                   
-                    Width="50"
-                    Height="25"
-                    x:Name="tile"
-                    Padding="3"
-                    HorizontalAlignment="Center"
-                    Content="Back"
-                    Command="{Binding Back}"
-                    CommandParameter="{Binding PreviousDirectory}"/>
-            <ScrollViewer HorizontalContentAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="1" Grid.ColumnSpan="2">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding Data}">
-                    <ItemsControl.ItemTemplate>
+        
+        <Grid Grid.Row="0" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="70"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Column="0" Text="Search" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" Margin="5 3 5 3" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Text="{Binding Search}"/>
+            <Button Grid.Column="2" Margin= "0 3 10 3" Content="Browse" Command="{Binding Browse}" CommandParameter="{Binding Search}"/>
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Filter" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Margin="5 3 10 3" HorizontalContentAlignment="Left" VerticalContentAlignment="Center"/>
+        </Grid>
+        <Border BorderThickness="1" BorderBrush="Gray" Grid.Column="0" Grid.Row="1"  Margin="5 3 3 3">
+            <ScrollViewer HorizontalContentAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" >
+                <TreeView ItemsSource="{Binding RootTree.FileSystemElementViewModels}" HorizontalContentAlignment="Stretch"  Grid.Column="0" Margin="5 0 0 0">
+                    <TreeView.ItemTemplate>
                         <DataTemplate>
-                            <Button TextElement.Foreground="Black"
-                                    Background="Transparent"
-                                    BorderBrush="Transparent"                                   
-                                    Width="Auto"
-                                    x:Name="tile"
-                                    Grid.Column="0"
-                                    Margin="0"
-                                    Padding="3"
-                                    HorizontalContentAlignment="Left">
-                                <Button.InputBindings>
-                                    <MouseBinding Gesture="LeftDoubleClick" 
-                                                  Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path= DataContext.Open}"
-                                                  CommandParameter="{Binding}"/>
-                                </Button.InputBindings>
-                                <TextBlock
-                                    FontSize="14"
-                                    FontWeight="Normal"
-                                    Text="{Binding Name}"
-                                    TextWrapping="WrapWithOverflow" />
-                            </Button>
+                            <local:FileSystemElementView DataContext="{Binding}"/>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </ScrollViewer>
+        </Border>
+        <Border BorderThickness="1" BorderBrush="Gray" Grid.Column="1" Grid.Row="1" Margin="3 3 10 3">
+            <ScrollViewer HorizontalContentAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" >
+                <StackPanel>
+                    <Border BorderThickness="1" BorderBrush="Gray" Margin="5 3 10 3" Visibility="{Binding ShowCurrentDirectory, Converter={StaticResource BooleanToVisibility}}">
+                        <DockPanel>
+                            <Button Width="25" Height="25" HorizontalAlignment="Left" Command="{Binding Back}"  FontFamily="Marlett" FontSize="20" Content="3"/>
+                            <TextBlock Text="{Binding CurrentDirectory}"  HorizontalAlignment="Left" Margin="3"/>
+                        </DockPanel>
+                    </Border>
+                    <TextBlock Text="{Binding Filler}" Visibility="{Binding ShowFiller, Converter={StaticResource BooleanToVisibility}}" HorizontalAlignment="Center" Margin="10" FontSize="20" FontStyle="Italic"/>
+                    <ItemsControl ItemsSource="{Binding FileSystemElemetsList}" HorizontalContentAlignment="Stretch"  Grid.Column="0" Margin="5 0 0 0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:FileSystemElementView DataContext="{Binding}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Window>

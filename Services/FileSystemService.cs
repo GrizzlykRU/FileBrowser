@@ -36,7 +36,7 @@ namespace FileBrowser.Services
             var drivers = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Fixed);
             foreach(var driver in drivers)
             {
-                elements.Add(new FileSystemElement(driver.RootDirectory.FullName, driver.Name));
+                elements.Add(new FileSystemElement(driver.RootDirectory.FullName, driver.Name, true, true));
             }
             return elements;
         }
