@@ -1,26 +1,16 @@
 ﻿using DynamicData.Binding;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using FileBrowser.Models;
 using FileBrowser.Services;
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Media.Imaging;
 using FileBrowser.Utility;
-using System.Windows.Interop;
-using System.Drawing;
-using System;
-using System.Windows.Media;
-using System.Reactive.Disposables;
-using System.Threading;
 using System.Reactive.Linq;
-using ReactiveUI;
-using System.IO;
 using DynamicData;
 
 namespace FileBrowser.ViewModels
 {
+    //ViewModel для отображения списка файлов/каталогов в выбранном каталоге
     public class FileSystemListViewer : AbstractNotifyPropertyChanged
     {
         private IFileSystemService _fileSystemService;
@@ -28,14 +18,6 @@ namespace FileBrowser.ViewModels
         private ObservableCollection<FileSystemElement> _fileSystemElements;
 
         private MainViewModel _mainViewModel;
-
-        private ImageSource _itemIcon;
-
-        private bool _isVisibleByName = true;
-
-        private bool _isVisibleByExtension = true;
-
-        private bool _isVisible = true;
 
 
         public FileSystemListViewer(MainViewModel mainViewModel)
@@ -48,7 +30,7 @@ namespace FileBrowser.ViewModels
                 var element = sender as FileSystemElement;
                 if (element.IsFolder)
                 {
-                    _mainViewModel.InitializeFileSystemView(element.Path);
+                    _mainViewModel.UpdateFileSystemView(element.Path);
                 }
                 else
                 {
@@ -68,8 +50,8 @@ namespace FileBrowser.ViewModels
 
         public void UpdateCollection(string path)
         {
-            var collection = _fileSystemService.GetFileSystemElements(path);
             _fileSystemElements.Clear();
+            var collection = _fileSystemService.GetFileSystemElements(path);
             _fileSystemElements.AddRange(collection);
         }
 
@@ -83,6 +65,7 @@ namespace FileBrowser.ViewModels
             }
         }
 
+        //Восстанавливает видимость элементов, при сбросе фильтра по типу файла
         public void ResetCollectionByExtension()
         {
             var files = _fileSystemElements.Where(x => !x.IsFolder && x.IsVisibleByExtension == false);
@@ -101,6 +84,7 @@ namespace FileBrowser.ViewModels
             }
         }
 
+        //Восстанавливает видимость элементов, при сбросе фильтра по имение
         public void ResetCollectionByName()
         {
             var files = _fileSystemElements.Where(x => !x.IsFolder && x.IsVisibleByName == false);
@@ -111,33 +95,11 @@ namespace FileBrowser.ViewModels
         }
 
         public ObservableCollection<FileSystemElement> FileSystemElements => _fileSystemElements;
-
-        public bool IsVisibleByName
-        {
-            get => _isVisibleByName;
-            set => SetAndRaise(ref _isVisibleByName, value);
-        }
-
-        public bool IsVisibleByExtension
-        {
-            get => _isVisibleByExtension;
-            set => SetAndRaise(ref _isVisibleByExtension, value);
-        }
-
-        public bool IsVisible
-        {
-            get => _isVisible;
-            set => SetAndRaise(ref _isVisible, value);
-        }
-
-        public ImageSource ItemIcon 
-        {
-            get => _itemIcon;
-            set => SetAndRaise(ref _itemIcon, value);
-        }
-
+        
+        //Команда для открытия папки или выполнения файла (выполняется по дабл клику по левой клавише мышки)
         public ViewModelCommand OpenExecute { get; set; }
-
+        
+        //Команда для подачи информации о файле в MainViewModel (выполняется по одиночному клику по левой клавише мышки)
         public ViewModelCommand ShowInfo { get; set; }
     }
 }

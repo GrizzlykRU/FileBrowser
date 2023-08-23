@@ -1,5 +1,4 @@
-﻿using DynamicData;
-using FileBrowser.Models;
+﻿using FileBrowser.Models;
 using FileBrowser.Utility;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,8 @@ namespace FileBrowser.Services
             var elements = new List<FileSystemElement>();
             var directoryPaths = Directory.GetDirectories(path);
             var filePaths = Directory.GetFiles(path);
+            //в стандартном файл менеджере обычно папки идут перед файлами,
+            //потому коллекцию сначала заполняю отсортированным масивом каталогов, а после файлов
             Array.Sort(directoryPaths);
             Array.Sort(filePaths);
             foreach (var el in directoryPaths)
@@ -33,6 +34,7 @@ namespace FileBrowser.Services
             return elements;
         }
 
+        //получаем список носителей для корневого каталога
         public IReadOnlyList<FileSystemElement> GetDrivers()
         {
             var elements = new List<FileSystemElement>();

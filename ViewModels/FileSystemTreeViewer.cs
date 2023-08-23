@@ -5,21 +5,14 @@ using System.Linq;
 using FileBrowser.Models;
 using FileBrowser.Services;
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using FileBrowser.Utility;
-using System.Windows.Interop;
-using System.Drawing;
 using System;
-using System.Windows.Media;
-using System.Reactive.Disposables;
-using System.Threading;
 using System.Reactive.Linq;
-using ReactiveUI;
 using System.IO;
 
 namespace FileBrowser.ViewModels
 {
+    // ViewModel для отображение дерева файловой система начиная с накопителей
+
     public class FileSystemTreeViewer : AbstractNotifyPropertyChanged
     {
         private IFileSystemService _fileSystemService;
@@ -32,10 +25,12 @@ namespace FileBrowser.ViewModels
 
         private bool _isOpen;
 
+        //поле, определяющее инстанцированы потомки элемента дерева (необходимо при раскрытии/схлопывании каталога)
         private bool _isInitialized;
 
         private FileSystemTreeViewer(){}
 
+        // Конструктор для корня дерева
         public FileSystemTreeViewer(MainViewModel mainViewModel)
         {
             _fileSystemService = new FileSystemService();
@@ -45,6 +40,7 @@ namespace FileBrowser.ViewModels
             FillChildren(drivers);
         }
 
+        //Конуструктор для потомков
         public FileSystemTreeViewer(FileSystemElement fileSystemElement, MainViewModel mainViewModel)
         {
             _fileSystemService = new FileSystemService();
@@ -80,7 +76,7 @@ namespace FileBrowser.ViewModels
             {
                 if (FileSystemElement.IsFolder)
                 {
-                    _mainViewModel.InitializeFileSystemView(FileSystemElement.Path);
+                    _mainViewModel.UpdateFileSystemView(FileSystemElement.Path);
                 }
                 else
                 {
@@ -93,6 +89,10 @@ namespace FileBrowser.ViewModels
                 if (!FileSystemElement.IsFolder)
                 {
                     _mainViewModel.ObservableFile = FileSystemElement;
+                }
+                else
+                {
+                    _mainViewModel.UpdateFileSystemView(FileSystemElement.Path);
                 }
             });
         }
@@ -124,16 +124,20 @@ namespace FileBrowser.ViewModels
 
         public ObservableCollection<FileSystemTreeViewer> FileSystemElementChildren => _fileSystemElementChildren;
 
+        //Свойство, определяющее раскрыт ли элемент дерева
         public bool IsOpen
         {
             get => _isOpen;
             set => SetAndRaise(ref _isOpen, value);
         }
 
+        //Команда для открытия папки или выполнения файла (выполняется по дабл клику по левой клавише мышки)
         public ViewModelCommand OpenExecute { get; set; }
 
+        //Команда для подачи информации о файле в MainViewModel (выполняется по одиночному клику по левой клавише мышки)
         public ViewModelCommand ShowInfo { get; set; }
 
+        //Команда для расширения/схлопывания группового элемента (папки)
         public ViewModelCommand Expand { get; set; }
     }
 }

@@ -1,11 +1,7 @@
 ﻿using DynamicData.Binding;
 using System.Windows.Media;
 using System.IO;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Linq;
 using FileBrowser.Utility;
-using System;
 
 namespace FileBrowser.Models
 {

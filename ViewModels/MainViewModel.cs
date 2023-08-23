@@ -1,35 +1,39 @@
 ﻿using DynamicData.Binding;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
 using FileBrowser.Models;
-using FileBrowser.Services;
-using System.Windows.Input;
 using System.IO;
-using System.Diagnostics;
-using System.Linq.Expressions;
 using FileBrowser.Utility;
-using System.Windows.Shapes;
-using System.Reflection;
-using FileBrowser.Views;
 
 namespace FileBrowser.ViewModels
 {
     public class MainViewModel : AbstractNotifyPropertyChanged
     {
+        //корень дерева файловой системы
         private FileSystemTreeViewer _treeRoot;
+
+        //ViewModel для списка папок/файлов в выбранном каталоге
         private FileSystemListViewer _fileSystemListViewer;
+
+        //Выбранный файл для отображения информации
         private FileSystemElement _observableFile;
+
         private string _search;
+
+        //поле для отображние сообщений об ошибках или невозможности отображения файлов
         private string _filler;
+
         private string _filter = "";
+
         private bool _showFiller;
+
         private string _currentDirectory;
+
+        //целочисленное значения enum FileExtensions.FileType 
         private int _filterType = 0;
+
+        //История запросов 
         private Stack<string> _browseHistory;
 
         public MainViewModel()
@@ -41,20 +45,7 @@ namespace FileBrowser.ViewModels
                 {
                     if(!string.IsNullOrEmpty(_search) && _search != _currentDirectory)
                     {
-                        try
-                        {
-                           InitializeFileSystemView(_search);
-                            _currentDirectory = Search;
-                        }
-                        catch (UnauthorizedAccessException ex)
-                        {
-                            Filler = "No acces";
-                            ShowFiller = true;
-                        }
-                        catch (DirectoryNotFoundException ex)
-                        {
-                            Filler = "Not found";
-                        }
+                         UpdateFileSystemView(_search);  
                     }               
                 }
             );
@@ -62,7 +53,7 @@ namespace FileBrowser.ViewModels
                 (sender) =>
                 {
                     var prevDirectory = _browseHistory.Pop();
-                    InitializeFileSystemView(prevDirectory, true);
+                    UpdateFileSystemView(prevDirectory, true);
                     _currentDirectory = prevDirectory;
                     Search = _currentDirectory;
                 },
@@ -82,20 +73,22 @@ namespace FileBrowser.ViewModels
                     {
                         _fileSystemListViewer.ResetCollectionByExtension();
                     }
-                    UpdateFilterByFileVisibility();
+                    UpdateFillerByFileVisibility();
                 }
             );
         }
 
-        public void InitializeFileSystemView(string path, bool backPressed = false)
+        //Обновляет список элементов файловой системы по выбранному пути
+        //(переднные через Browse или по двйоному нажатию в списке или дереве)
+        public void UpdateFileSystemView(string path, bool backPressed = false)
         {
             try
             {
-                _fileSystemListViewer.UpdateCollection(path);
                 if (!backPressed && !string.IsNullOrEmpty(_currentDirectory))
                 {
                     _browseHistory.Push(_currentDirectory);
                 }
+                _fileSystemListViewer.UpdateCollection(path);
                 _currentDirectory = path;
                 Search = _currentDirectory;
                 if (_fileSystemListViewer.FileSystemElements.Count == 0)
@@ -111,13 +104,22 @@ namespace FileBrowser.ViewModels
                 }
 
             }
-            catch(UnauthorizedAccessException ex) { }
+            catch (UnauthorizedAccessException ex)
             {
-
+                _currentDirectory = path;
+                Search = _currentDirectory;
+                Filler = "No acces";
+                ShowFiller = true;
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                Filler = "Not found";
+                ShowFiller = true;
             }
 
         }
 
+        //Фильтрация по имени файла
         private void OnFilterChanged()
         {
             if (Filter.Length >= 3)
@@ -128,10 +130,11 @@ namespace FileBrowser.ViewModels
             {
                 _fileSystemListViewer.ResetCollectionByName();
             }
-            UpdateFilterByFileVisibility();
+            UpdateFillerByFileVisibility();
         }
 
-        private void UpdateFilterByFileVisibility()
+        //отображение сообщения, если файлы по фильтрам не найдены и в каталоге нет папок
+        private void UpdateFillerByFileVisibility()
         {
             var anyVisibleElement = FileSystemListViewer.FileSystemElements.Where(x => x.IsVisibleByName && x.IsVisibleByExtension).Any();
             if (!anyVisibleElement)
@@ -191,10 +194,13 @@ namespace FileBrowser.ViewModels
             set => SetAndRaise(ref _showFiller, value);
         }
 
+        //Команда для поиска 
         public ViewModelCommand Browse { get; set; }
 
+        //Команда, восстанавливающая список элементов, опираясь на историю запросов
         public ViewModelCommand Back { get; set; }
 
+        //Команда, выполняющая фильтрацию по типу файла
         public ViewModelCommand FilterByFileType { get; set; }
 
     }

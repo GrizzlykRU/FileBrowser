@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.Collections.Generic;
 
 namespace FileBrowser.Utility
 {
+    //Небольшая утилита для определениая типа файла
     public static class FileExtensions
     {
         public enum FileType

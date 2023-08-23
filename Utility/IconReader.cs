@@ -1,11 +1,6 @@
 using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Data;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
-using FileBrowser.Models;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
