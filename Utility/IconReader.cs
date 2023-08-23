@@ -4,6 +4,11 @@ using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Runtime.InteropServices;
+using System.Windows.Media;
+using FileBrowser.Models;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Windows;
 
 namespace FileBrowser.Utility
 {
@@ -121,8 +126,16 @@ namespace FileBrowser.Utility
 
 			User32.DestroyIcon( shfi.hIcon );		// Cleanup
 			return icon;
-		}	
-	}
+		}
+
+        public static ImageSource GetImage(string path, bool isFolder)
+		{
+            var icon = isFolder ? GetFolderIcon(path, IconSize.Small, FolderType.Closed) : GetFileIcon(path, IconSize.Small, false);
+            var image = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            icon.Dispose();
+			return image;
+        }
+    }
 
 	/// <summary>
 	/// Wraps necessary Shell32.dll structures and functions required to retrieve Icon Handles using SHGetFileInfo. Code

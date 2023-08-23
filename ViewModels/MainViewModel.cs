@@ -12,131 +12,171 @@ using System.Windows.Input;
 using System.IO;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using FileBrowser.Utility;
+using System.Windows.Shapes;
+using System.Reflection;
+using FileBrowser.Views;
 
 namespace FileBrowser.ViewModels
 {
     public class MainViewModel : AbstractNotifyPropertyChanged
     {
+        private FileSystemTreeViewer _treeRoot;
+        private FileSystemListViewer _fileSystemListViewer;
+        private FileSystemElement _observableFile;
         private string _search;
-        private FileSystemElementViewModel _rootTree;
-        private ObservableCollection<FileSystemElementViewModel> _fileSystemElemetsList;
-        private IFileSystemService _fileSystemService;
         private string _filler;
+        private string _filter = "";
         private bool _showFiller;
         private string _currentDirectory;
-        private bool _showCurrentDirectory;
+        private int _filterType = 0;
         private Stack<string> _browseHistory;
 
         public MainViewModel()
         {
-            _fileSystemService = new FileSystemService();
-            _rootTree = new FileSystemElementViewModel();
-            FileSystemElemetsList = new ObservableCollection<FileSystemElementViewModel>();
+            TreeRoot = new FileSystemTreeViewer(this);
+            FileSystemListViewer = new FileSystemListViewer(this);
             _browseHistory = new Stack<string>();
             Browse = new ViewModelCommand((directory) =>
                 {
-                    if(directory != null)
+                    if(!string.IsNullOrEmpty(_search) && _search != _currentDirectory)
                     {
                         try
                         {
-                           InitializeFileSystemElementsView(Search);
-                           CurrentDirectory = Search;
-                           ShowCurrentDirectory = true;
+                           InitializeFileSystemView(_search);
+                            _currentDirectory = Search;
                         }
                         catch (UnauthorizedAccessException ex)
                         {
                             Filler = "No acces";
                             ShowFiller = true;
-                            ShowCurrentDirectory = false;
                         }
                         catch (DirectoryNotFoundException ex)
                         {
                             Filler = "Not found";
-                            ShowCurrentDirectory = false;
                         }
                     }               
                 }
             );
-            Back = new ViewModelCommand((sender) =>
+            Back = new ViewModelCommand(
+                (sender) =>
+                {
+                    var prevDirectory = _browseHistory.Pop();
+                    InitializeFileSystemView(prevDirectory, true);
+                    _currentDirectory = prevDirectory;
+                    Search = _currentDirectory;
+                },
+                (sender) => 
+                {
+                    return _browseHistory.Any();
+                }
+            );
+            FilterByFileType = new ViewModelCommand((fileType) =>
             {
-                var prevDirectory = _browseHistory.Pop();
-                var fileSystemElements = _fileSystemService.GetFileSystemElements(prevDirectory);
-                FileSystemElemetsList.Clear();
-                FillViewModels(fileSystemElements);
-                CurrentDirectory = prevDirectory;
-                ShowCurrentDirectory = true;
-            },
-            (sender) => 
-            {
-                return _browseHistory.Any();
-            }
+                    _filterType = Convert.ToInt32(fileType);
+                    if(_filterType != (int)FileExtensions.FileType.Unknown)
+                    {
+                        _fileSystemListViewer.FilterByExtension(_filterType);
+                    }
+                    else
+                    {
+                        _fileSystemListViewer.ResetCollectionByExtension();
+                    }
+                    UpdateFilterByFileVisibility();
+                }
             );
         }
 
-        private void InitializeFileSystemElementsView(string path)
+        public void InitializeFileSystemView(string path, bool backPressed = false)
         {
-            var fileSystemElements = _fileSystemService.GetFileSystemElements(path);
-            FileSystemElemetsList.Clear();
-            FillViewModels(fileSystemElements);
-            if (!string.IsNullOrEmpty(CurrentDirectory))
+            try
             {
-                _browseHistory.Push(CurrentDirectory);
+                _fileSystemListViewer.UpdateCollection(path);
+                if (!backPressed && !string.IsNullOrEmpty(_currentDirectory))
+                {
+                    _browseHistory.Push(_currentDirectory);
+                }
+                _currentDirectory = path;
+                Search = _currentDirectory;
+                if (_fileSystemListViewer.FileSystemElements.Count == 0)
+                {
+                    Filler = "No files";
+                    ShowFiller = true;
+                }
+                else
+                {
+                    ShowFiller = false;
+                    FilterByFileType.Execute(_filterType);
+                    OnFilterChanged(); 
+                }
+
             }
-            
+            catch(UnauthorizedAccessException ex) { }
+            {
+
+            }
+
         }
 
-        private void FillViewModels(IReadOnlyCollection<FileSystemElement> elements)
+        private void OnFilterChanged()
         {
-            if (elements.Any())
+            if (Filter.Length >= 3)
             {
-                ShowFiller = false;
-                foreach (var element in elements)
-                {
-                    var openCommand = new ViewModelCommand((directory) =>
-                    {
-                        var fileSystemElement = directory as FileSystemElement;
-                        if (fileSystemElement.IsDirectory)
-                        {
-                            try
-                            {
-                                InitializeFileSystemElementsView(fileSystemElement.Path);
-                                CurrentDirectory = fileSystemElement.Path;
-                            }
-                            catch (UnauthorizedAccessException ex)
-                            {
-                            }
-                        }
-                        else
-                        {
-                            Process.Start(fileSystemElement.Path);
-                        }
-                    });
-                    FileSystemElemetsList.Add(new FileSystemElementViewModel(element, openCommand));
-                }
+                _fileSystemListViewer.FilterByName(Filter);
             }
             else
             {
-                Filler = "No files";
+                _fileSystemListViewer.ResetCollectionByName();
+            }
+            UpdateFilterByFileVisibility();
+        }
+
+        private void UpdateFilterByFileVisibility()
+        {
+            var anyVisibleElement = FileSystemListViewer.FileSystemElements.Where(x => x.IsVisibleByName && x.IsVisibleByExtension).Any();
+            if (!anyVisibleElement)
+            {
                 ShowFiller = true;
+                Filler = "No matched files";
+            }
+            else
+            {
+                ShowFiller = false;
             }
         }
 
-        public FileSystemElementViewModel RootTree
+        public FileSystemTreeViewer TreeRoot
         {
-            get => _rootTree;
-            set => SetAndRaise(ref _rootTree, value);
+            get => _treeRoot;
+            set => SetAndRaise(ref _treeRoot, value);
         }
 
-        public ObservableCollection<FileSystemElementViewModel> FileSystemElemetsList
+        public FileSystemListViewer FileSystemListViewer
         {
-            get => _fileSystemElemetsList;
-            set => SetAndRaise(ref _fileSystemElemetsList, value);
+            get => _fileSystemListViewer;
+            set => SetAndRaise(ref _fileSystemListViewer, value);
+        }
+
+        public FileSystemElement ObservableFile
+        {
+            get => _observableFile;
+            set => SetAndRaise(ref _observableFile, value);
         }
 
         public string Search
         {
             get => _search;
             set => SetAndRaise(ref _search, value);
+        }
+
+        public string Filter
+        {
+            get => _filter;
+            set
+            {
+                SetAndRaise(ref _filter, value);
+                OnFilterChanged();
+            }
         }
 
         public string Filler
@@ -151,24 +191,11 @@ namespace FileBrowser.ViewModels
             set => SetAndRaise(ref _showFiller, value);
         }
 
-        public string CurrentDirectory
-        {
-            get => _currentDirectory;
-            set => SetAndRaise(ref _currentDirectory, value);
-        }
-
-        public bool ShowCurrentDirectory
-        {
-            get => _showCurrentDirectory;
-            set => SetAndRaise(ref _showCurrentDirectory, value);
-        }
-
         public ViewModelCommand Browse { get; set; }
 
         public ViewModelCommand Back { get; set; }
 
-        public ViewModelCommand FilterFileSystemElements { get; set; }
-
+        public ViewModelCommand FilterByFileType { get; set; }
 
     }
 }

@@ -89,13 +89,18 @@
     <Compile Include="Models\FileSystemElement.cs" />
     <Compile Include="Services\FileSystemService.cs" />
     <Compile Include="Services\IFileSystemService.cs" />
+    <Compile Include="Utility\FileExtensions.cs" />
+    <Compile Include="Utility\FileSizeConverter.cs" />
     <Compile Include="Utility\IconReader.cs" />
-    <Compile Include="ViewModels\FileSystemElementViewModel.cs" />
+    <Compile Include="ViewModels\FileSystemListViewer.cs" />
+    <Compile Include="ViewModels\FileSystemTreeViewer.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\ViewModelCommand.cs" />
-    <Compile Include="Views\FileSystemElementView.xaml.cs">
-      <DependentUpon>FileSystemElementView.xaml</DependentUpon>
+    <Compile Include="Views\FileSystemListView.xaml.cs">
+      <DependentUpon>FileSystemListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FileSystemTreeView.xaml.cs">
+      <DependentUpon>FileSystemTreeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -130,7 +135,11 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Page Include="Views\FileSystemElementView.xaml">
+    <Page Include="Views\FileSystemListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\FileSystemTreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

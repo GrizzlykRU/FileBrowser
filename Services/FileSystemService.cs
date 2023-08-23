@@ -1,5 +1,6 @@
 ﻿using DynamicData;
 using FileBrowser.Models;
+using FileBrowser.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,12 +20,14 @@ namespace FileBrowser.Services
             foreach (var el in directoryPaths)
             {
                 var name = Path.GetFileName(el);
-                elements.Add(new FileSystemElement(el, name));
+                var image = IconReader.GetImage(el, true);
+                elements.Add(new FileSystemElement(el, name, image));
             }
             foreach (var el in filePaths)
             {
                 var name = Path.GetFileName(el);
-                elements.Add(new FileSystemElement(el, name, false));
+                var image = IconReader.GetImage(el, false);
+                elements.Add(new FileSystemElement(el, name, image, false));
             }
 
             return elements;
@@ -36,7 +39,8 @@ namespace FileBrowser.Services
             var drivers = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Fixed);
             foreach(var driver in drivers)
             {
-                elements.Add(new FileSystemElement(driver.RootDirectory.FullName, driver.Name, true, true));
+                var image = IconReader.GetImage(driver.RootDirectory.FullName, true);
+                elements.Add(new FileSystemElement(driver.RootDirectory.FullName, driver.Name, image, true, true));
             }
             return elements;
         }
