@@ -87,25 +87,41 @@
                   Width="3" Background="Gray"
                   VerticalAlignment="Stretch" 
                   HorizontalAlignment="Center"/>
-            <Border BorderThickness="1" BorderBrush="Gray" Grid.Column="4" Margin="0 3 -1 3">
-                <DockPanel>
-                    <StackPanel Width="100">
-                        <TextBlock Text="Полный путь:" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="Имя:" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="Расширение:" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="Размер:" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="Дата создания:" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="Дата изменения:" HorizontalAlignment="Left" Margin="5"/>
-                    </StackPanel>
+            <Border BorderThickness="1" BorderBrush="Gray" Grid.Column="4" Margin="0 3 1 3" VerticalAlignment="Stretch">
+                <StackPanel VerticalAlignment="Stretch">
+                    <DockPanel>
+                        <StackPanel Width="100">
+                            <TextBlock Text="Полный путь:" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="Имя:" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="Расширение:" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="Размер:" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="Дата создания:" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="Дата изменения:" HorizontalAlignment="Left" Margin="5"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Name="CurrentFilePath" Text="{Binding ObservableFile.Path, NotifyOnTargetUpdated=True}" HorizontalAlignment="Left" Margin="5" TargetUpdated="CurrentFilePath_TargetUpdated"/>
+                            <TextBlock Text="{Binding ObservableFile.Name}" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="{Binding ObservableFile.Extension}" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="{Binding ObservableFile.SizeString}" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="{Binding ObservableFile.DateCreated}" HorizontalAlignment="Left" Margin="5"/>
+                            <TextBlock Text="{Binding ObservableFile.DateLastWritten}" HorizontalAlignment="Left" Margin="5"/>
+                        </StackPanel>
+                    </DockPanel>
                     <StackPanel>
-                        <TextBlock Text="{Binding ObservableFile.Path}" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="{Binding ObservableFile.Name}" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="{Binding ObservableFile.Extension}" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="{Binding ObservableFile.SizeString}" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="{Binding ObservableFile.DateCreated}" HorizontalAlignment="Left" Margin="5"/>
-                        <TextBlock Text="{Binding ObservableFile.DateLastWritten}" HorizontalAlignment="Left" Margin="5"/>
+                        <MediaElement  Name="MediaElement"  
+                                       Source="{Binding ObservableFile.Path}"
+                                       HorizontalAlignment="Stretch" 
+                                       Margin="10" 
+                                       VerticalAlignment="Stretch" 
+                                       MediaOpened="MediaElement_MediaOpened"
+                                       MediaFailed="MediaElement_MediaFailed">
+                           
+                        </MediaElement>
+                        <ProgressBar Name="MediaProgress" Height="7" Margin="5 0"/>
+                        <TextBlock Name="MediaTimer" HorizontalAlignment="Center" VerticalAlignment="Center" Height="15" Margin="5"/>
                     </StackPanel>
-                </DockPanel>
+                    <TextBox Name="TextContent" Margin="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>
